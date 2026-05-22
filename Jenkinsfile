@@ -3,6 +3,7 @@ pipeline {
 
     tools {
         maven 'Maven'
+        jdk 'JDK21'
     }
 
     stages {
@@ -10,7 +11,8 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/Kavana55/simplecalci.git'
+                    credentialsId: 'github-token',
+                    url: 'https://github.com/Kavana55/simplecalci.git'
             }
         }
 
@@ -22,7 +24,7 @@ pipeline {
 
         stage('Deploy WAR File') {
             steps {
-                sh 'cp target/calculator-app.war /var/lib/tomcat10/webapps/'
+                sh 'sudo cp target/calculator-app.war /var/lib/tomcat10/webapps/'
             }
         }
 
@@ -30,15 +32,15 @@ pipeline {
 
     post {
         success {
-            mail to: 'yourgmail@gmail.com',
-            subject: 'BUILD SUCCESS',
-            body: 'Calculator project build completed successfully.'
+            mail to: 'kavanan878@gmail.com',
+                 subject: 'BUILD SUCCESS',
+                 body: 'Calculator project build completed successfully.'
         }
 
         failure {
-            mail to: 'yourgmail@gmail.com',
-            subject: 'BUILD FAILED',
-            body: 'Calculator project build failed.'
+            mail to: 'kavanan878@gmail.com',
+                 subject: 'BUILD FAILED',
+                 body: 'Calculator project build failed.'
         }
     }
 }
