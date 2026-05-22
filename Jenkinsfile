@@ -16,8 +16,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Kavana55/simplecalci.git',
-                    credentialsId: 'github-token'
+                    credentialsId: 'github-token',
+                    url: 'https://github.com/Kavana55/simplecalci.git'
             }
         }
 
@@ -41,7 +41,7 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                sh 'sudo cp target/calculator-app.war /var/lib/tomcat10/webapps/'
+                sh 'cp target/calculator-app.war /var/lib/tomcat10/webapps/'
             }
         }
     }
@@ -53,17 +53,25 @@ pipeline {
         }
 
         success {
-            emailext (
+            emailext(
                 subject: "SUCCESS: ${JOB_NAME} - Build #${BUILD_NUMBER}",
-                body: "Calculator project build successful.\nView Build: ${BUILD_URL}",
+                body: """Calculator project build completed successfully.
+
+Build URL:
+${BUILD_URL}
+""",
                 to: "kavanan878@gmail.com"
             )
         }
 
         failure {
-            emailext (
+            emailext(
                 subject: "FAILED: ${JOB_NAME} - Build #${BUILD_NUMBER}",
-                body: "Calculator project build failed.\nCheck Console: ${BUILD_URL}",
+                body: """Calculator project build failed.
+
+Check console output:
+${BUILD_URL}
+""",
                 to: "kavanan878@gmail.com"
             )
         }
