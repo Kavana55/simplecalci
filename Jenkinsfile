@@ -6,41 +6,66 @@ pipeline {
         jdk 'JDK21'
     }
 
+    options {
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
     stages {
 
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'github-token',
-                    url: 'https://github.com/Kavana55/simplecalci.git'
+                    url: 'https://github.com/Kavana55/simplecalci.git',
+                    credentialsId: 'github-token'
             }
         }
 
-        stage('Build Project') {
+        stage('Build') {
             steps {
-                sh 'mvn clean package'
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Deploy WAR File') {
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+
+        stage('Deploy to Tomcat') {
             steps {
                 sh 'sudo cp target/calculator-app.war /var/lib/tomcat10/webapps/'
             }
         }
-
     }
 
     post {
+
+        always {
+            cleanWs()
+        }
+
         success {
-            mail to: 'kavanan878@gmail.com',
-                 subject: 'BUILD SUCCESS',
-                 body: 'Calculator project build completed successfully.'
+            emailext (
+                subject: "SUCCESS: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+                body: "Calculator project build successful.\nView Build: ${BUILD_URL}",
+                to: "kavanan878@gmail.com"
+            )
         }
 
         failure {
-            mail to: 'kavanan878@gmail.com',
-                 subject: 'BUILD FAILED',
-                 body: 'Calculator project build failed.'
+            emailext (
+                subject: "FAILED: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+                body: "Calculator project build failed.\nCheck Console: ${BUILD_URL}",
+                to: "kavanan878@gmail.com"
+            )
         }
     }
 }
